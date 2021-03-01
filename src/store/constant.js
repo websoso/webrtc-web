@@ -31,7 +31,6 @@ export const RoomMutation = {
     ROOM_CODE: 'ROOM_CODE'
 }
 
-// todo 邀请的状态后续完善
 export const RoomStatusType = {
     OUT_ROOM: 'OUT_ROOM',
     IN_ROOM: 'IN_ROOM'

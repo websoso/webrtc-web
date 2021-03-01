@@ -53,7 +53,7 @@
                 Connector.send(Factory.directOffer())
             },
             enter: function (room) {
-                console.log("App.vue 进入房间：", room)
+                this.$store.commit(HomeMutation.WEBRTC_MODE, ModeType.WEBRTC_ROOM);
                 this.$store.commit(RoomMutation.ROOM_CODE, room);
                 pageManager.vuePage.openRoom(RoomMutation.STATUS_IN_ROOM);
             },

@@ -20,6 +20,12 @@
     import CircularButton from "./CircularButton";
     import {RoomStatusType} from '../store/constant';
     import ui from '../common/ui'
+    import Connector from "../tool/connection";
+    import {Factory} from "../tool/signal";
+    import {Page, pageManager} from "../tool/page";
+    import {SignalType} from "../tool/signal";
+    import {RTCManager, RTCModeType, Stream} from "../lib/webrtc-lib";
+    import {current} from "../common/common";
 
     const constraints = {
         video: true, audio: true
@@ -31,27 +37,9 @@
         data: function () {
             return {
                 status: RoomStatusType,
-                remoteList: [],
-                localVideo: null
-            }
-        },
-        computed: {
-            mediaList: function () {
-                let list = [];
-                for (let i = 0; i < this.remoteList.length; i++) {
-                    list.push(this.remoteList[i])
-                }
-                list.push(this.localVideo);
-                this.$nextTick(() => {
-                    for (let i = 0; i < list.length; i++) {
-                        if (list[i] != null) {
-                            // todo 待替换为以下注释内容，以获取远程流
-                            this.$refs.video[i].srcObject = this.localVideo.stream
-                            // this.$refs.video[i].srcObject = list[i].stream
-                        }
-                    }
-                })
-                return list;
+                mediaList: [],
+                mediaLocal: null,
+                mediaMap: null
             }
         },
         methods: {
@@ -62,28 +50,86 @@
                 let media = new Media();
                 media.element = null
                 media.stream = null
-                this.remoteList.push(media)
+                this.mediaList.push(media)
             },
             computeStyle(index) {
                 return ui.videoStyle(index, this.mediaList.length);
             },
+            localVideoStartPlay() {
+                Connector.send(Factory.groupJoin())
+            },
             getLocalUserMedia() {
                 navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+                    this.addUniqueMedia(stream, true);
+                })
+            },
+            addUniqueMedia(mediaStream, isLocal) {
+                console.log(mediaStream)
+                // 如果没有，创建一个新的 Stream，并添加到 mediaList
+                let media = this.mediaMap.get(mediaStream.id)
+                if (media === undefined) {
+                    console.log("[不存在]")
                     let media = new Media();
-                    media.stream = stream;
-                    this.localVideo = media;
+                    this.mediaMap.set(mediaStream.id, media)
+                    media.stream = mediaStream;
+                    this.mediaLocal = media
+                    this.mediaList.push(media);
                     this.$nextTick(() => {
                         // 添加成功之后
-                        media.element = this.$refs.video[0]
-                        media.element.srcObject = stream;
+                        let size = this.$refs.video.length;
+                        media.element = this.$refs.video[size-1]
+                        media.element.srcObject = mediaStream;
+                        if (isLocal) {
+                            media.element.onplaying = this.localVideoStartPlay;
+                            console.log("[获取本地流]")
+                        } else {
+                            console.log("[获取远程流]")
+                        }
                     })
+                } else {
+                    console.log("[存在]")
+                    media.element.srcObject = mediaStream
+                }
+            },
+            receivedOffer(offer) {
+                let __this = this;
+                let streamList = []
+                let tracks = []
+                this.mediaLocal.stream.getTracks().forEach(track => {
+                    tracks.push(track)
                 })
+                let stream = new Stream(this.mediaLocal.stream, tracks);
+                streamList.push(stream);
+                RTCManager.createAnswer({
+                    mode: RTCModeType.ROOM,
+                    streams: streamList,
+                    fallback: __this.receivedRemoteStream,
+                    offer: offer
+                })
+            },
+            receivedRemoteStream(mediaStream) {
+                console.log(current(), '[page] - [room] - [ontrack]', mediaStream)
+                console.log(current(), '[page] - [room] - [ontrack]', mediaStream.getTracks().length)
+                this.addUniqueMedia(mediaStream, false)
+            },
+            ReceivedSignal(signal) {
+                let __this = this;
+                switch (signal.type) {
+                    case SignalType.WEBRTC_OFFER:
+                        __this.receivedOffer(signal.payload);
+                        break
+                    case SignalType.WEBRTC_CANDIDATE:
+                        RTCManager.saveCandidate(signal.payload);
+                        break
+                }
             }
         },
         mounted() {
-            let media = new Media('', '');
-            console.log(media)
             this.getLocalUserMedia();
+        },
+        created() {
+            pageManager.initRoomPage(new Page(this));
+            this.mediaMap = new Map()
         }
     }
 

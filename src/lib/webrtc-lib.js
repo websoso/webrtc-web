@@ -1,12 +1,17 @@
 import Connector from '../tool/connection'
 import {Factory} from "../tool/message";
+import * as SignalFile from "../tool/signal";
 import {current} from "../common/common";
 
 const servers = null;
 
+// const disc_option = {
+//     offerToReceiveAudio: false,
+//     offerToReceiveVideo: true,
+// }
+
 const disc_option = {
-    offerToReceiveAudio: true,
-    offerToReceiveVideo: true,
+    offerToReceiveVideo: 1
 }
 
 export const RTCModeType = {
@@ -27,7 +32,11 @@ function PeerConnection({mode, streams, fallback}) {
 
     this.instance.onicecandidate = function (event) {
         if (event.candidate) {
-            Connector.send(Factory.webrtcCandidate(event.candidate))
+            if (__this.mode === RTCModeType.DIRECT) {
+                Connector.send(Factory.webrtcCandidate(event.candidate))
+            } else {
+                Connector.send(SignalFile.Factory.webrtcCandidate(event.candidate))
+            }
         }
     }
 
@@ -67,7 +76,11 @@ function PeerConnection({mode, streams, fallback}) {
             .then((answer) => {
                 __this.instance.setLocalDescription(answer)
                 .then(() => {
-                    Connector.send(Factory.webrtcAnswer(answer))
+                    if (__this.mode === RTCModeType.DIRECT) {
+                        Connector.send(Factory.webrtcAnswer(answer))
+                    } else {
+                        Connector.send(SignalFile.Factory.webrtcAnswer(answer))
+                    }
                 }).catch(handleError)
             }).catch(handleError)
         }).catch(handleError)

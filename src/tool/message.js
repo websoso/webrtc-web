@@ -2,9 +2,9 @@ import store from "../store";
 
 export const SignalType = {
     // webrtc
-    WEBRTC_OFFER: 'WEBRTC_OFFER',
-    WEBRTC_ANSWER: 'WEBRTC_ANSWER',
-    WEBRTC_CANDIDATE: 'WEBRTC_CANDIDATE',
+    WEBRTC_OFFER: 'DIRECT_WEBRTC_OFFER',
+    WEBRTC_ANSWER: 'DIRECT_WEBRTC_ANSWER',
+    WEBRTC_CANDIDATE: 'DIRECT_WEBRTC_CANDIDATE',
     // direct
     DIRECT_OFFER: 'DIRECT_OFFER',
     DIRECT_CANCEL_OFFER: 'DIRECT_CANCEL_OFFER',
@@ -13,7 +13,8 @@ export const SignalType = {
     DIRECT_HANG_UP: 'DIRECT_HANG_UP',
     // room
     ROOM_ENTER: 'ROOM_ENTER',
-    ROOM_LEAVE: 'ROOM_LEAVE'
+    ROOM_LEAVE: 'ROOM_LEAVE',
+    ROOM_WEBRTC_OFFER: 'WEBRTC_OFFER'
 }
 
 export const InfoType = {

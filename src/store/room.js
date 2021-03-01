@@ -13,7 +13,6 @@ export default {
             state.room_status = RoomStatusType.IN_ROOM;
         },
         [RoomMutation.ROOM_CODE]: function (state, roomCode) {
-            console.log(roomCode)
             state.room_code = roomCode;
         }
     }

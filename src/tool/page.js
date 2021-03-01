@@ -25,6 +25,10 @@ export function Page(obj) {
         __this.__vuePage.ReceivedMessage(message)
     }
 
+    this.receivedSignal = function (signal) {
+        __this.__vuePage.ReceivedSignal(signal)
+    }
+
     this.openRoom = function (roomMutation) {
         store.commit(roomMutation);
         __this.__vuePage.ShowRoom(true)
@@ -44,11 +48,16 @@ export const pageManager = {
 
     vuePage: null,
     directPage: null,
+    roomPage: null,
+
     initVuePage: function (page) {
         this.vuePage = page
     },
     initDirectPage: function (page) {
         this.directPage = page
+    },
+    initRoomPage: function (page) {
+        this.roomPage = page
     },
     closeDirectPage: function () {
         if (this.directPage != null) {

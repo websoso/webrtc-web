@@ -45,6 +45,7 @@ export function Converter() {
         let count;
         let code = UUID();
         if (length <= MESSAGE_MAX_LENGTH) {
+            count = 1;
             messagePayloadList.push(messageJsonString)
         } else {
             count = Math.ceil(length / MESSAGE_MAX_LENGTH);

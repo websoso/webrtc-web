@@ -31,6 +31,9 @@ const MessageHandler = {
             case SignalType.DIRECT_HANG_UP:
                 this.webrtcMessage(message);
                 break;
+            case SignalType.ROOM_WEBRTC_OFFER:
+                this.rootWebrtcMessage(message);
+                break;
         }
     },
 
@@ -53,6 +56,10 @@ const MessageHandler = {
     webrtcMessage: function (message) {
         // todo 如果增加 room 后，应该进行模式判断
         pageManager.directPage.receivedMessage(message);
+    },
+
+    rootWebrtcMessage: function (message) {
+        console.log(message)
     }
 
 }
